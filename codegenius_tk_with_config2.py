@@ -40,51 +40,42 @@ def setup_logging(project_dir):
 
 # 加载环境变量
 def load_config_from_env():
-    # 判断是否是 PyInstaller 打包后的环境
     if getattr(sys, 'frozen', False):
-        # 打包后：EXE 所在目录
         app_dir = Path(sys.executable).parent
     else:
-        # 开发时：当前脚本所在目录
         app_dir = Path(__file__).parent
 
     env_file = app_dir / ".env"
     print(app_dir)
-    # 尝试加载 .env
     if env_file.exists():
         print("存在")
-        
         load_dotenv(dotenv_path=env_file)
-        print(os.getenv("API_KEY", "YOUR_API_KEY"));
-        # print(os.get)
+        print(os.getenv("API_KEY", "YOUR_API_KEY"))
         return True
 
-    # 可选：向上查找 1-2 层（适用于复杂项目结构）
     for _ in range(2):
         app_dir = app_dir.parent
         env_file = app_dir / ".env"
         if env_file.exists():
             load_dotenv(dotenv_path=env_file)
             return True
-        
-    # 默认值（建议留作 fallback）
+
     os.environ.setdefault("API_KEY", "YOUR_API_KEY")
-    os.environ.setdefault("BASE_URL", "https://api.openai.com/v1")  # 注意：无空格！
+    os.environ.setdefault("BASE_URL", "https://api.openai.com/v1")
     os.environ.setdefault("MODEL_NAME", "gpt-4o-mini")
     return False
 
-# 新增: 加载应用配置文件 (config.ini)
+# 加载应用配置文件 (config.ini)
 def load_app_config(app_dir):
     config = configparser.ConfigParser()
     config_file = app_dir / "config.ini"
     
     if config_file.exists():
-        config.read(config_file,encoding="utf-8")
+        config.read(config_file, encoding="utf-8")
         if 'settings' in config:
             project_folder = config['settings'].get('project_folder', '')
             system_prompt = config['settings'].get('system_prompt', '')
             return project_folder, system_prompt
-    # 如果文件不存在或缺少键，使用默认值
     return '', (
         "你是一位专业的Python程序员，精通各种Python开发任务。\n"
         "你需要根据用户的需求，完成Python项目的开发工作。\n"
@@ -109,10 +100,10 @@ def load_app_config(app_dir):
         "   - 使用 `logging` 模块 + `TimedRotatingFileHandler` 实现按天轮转\n"
         "   - 日志格式应包含时间、日志级别、模块名和消息\n"
         "9. 你不准运行代码,如果需要运行，请说明步骤，让对方来代劳\n"
-        "\n项目配置信息（供你参考，用于生成配置加载逻辑）：\n" 
+        "\n项目配置信息（供你参考，用于生成配置加载逻辑）：\n"
     )
 
-# 新增: 保存应用配置文件 (config.ini)
+# 保存应用配置文件 (config.ini)
 def save_app_config(app_dir, project_folder, system_prompt):
     config = configparser.ConfigParser()
     config['settings'] = {
@@ -125,7 +116,6 @@ def save_app_config(app_dir, project_folder, system_prompt):
 
 class CodeGeniusApp:
     def __init__(self, root: ttk.Window):
-        # 判断应用目录
         if getattr(sys, 'frozen', False):
             self.app_dir = Path(sys.executable).parent
         else:
@@ -133,7 +123,6 @@ class CodeGeniusApp:
         
         load_config_from_env()
         
-        # 加载应用配置 (project_folder 和 system_prompt)
         default_project_folder, default_system_prompt = load_app_config(self.app_dir)
         self.project_folder = default_project_folder
         self.system_prompt_var = ttk.StringVar(value=default_system_prompt)
@@ -149,13 +138,12 @@ class CodeGeniusApp:
         self.streaming = False
         self.current_ai_text = ""
         self.config_win_visible = False
+        self.token_buffer = []  # 新增：用于缓冲 token
         
-        # 异步处理相关初始化
         self.setup_async()
         self.create_widgets()
         self.setup_message_queue()
         
-        # 如果有默认 project_folder，设置并初始化日志
         if self.project_folder:
             self.folder_var.set(f"📁 {os.path.basename(self.project_folder)}")
             os.chdir(self.project_folder)
@@ -167,22 +155,20 @@ class CodeGeniusApp:
         self.running = True
         
     def setup_message_queue(self):
-        """设置消息队列和批处理机制"""
+        """设置消息队列"""
         self.message_queue = queue.Queue()
-        self.batch_messages = []
-        self.last_update_time = 0
-        self.BATCH_INTERVAL = 0.05  # 50ms批处理间隔
+        self.running = True
+        self.token_buffer = []
         self.process_message_queue()
-        
+
     def process_message_queue(self):
-        """处理消息队列的定时器 - 核心优化：批量处理UI更新"""
+        """处理消息队列的定时器 - 逐句更新"""
         try:
-            # 处理队列中的所有消息
             while True:
                 try:
                     msg_type, data = self.message_queue.get_nowait()
                     if msg_type == "stream_token":
-                        self.batch_messages.append(data)
+                        self._handle_stream_token(data)
                     elif msg_type == "full_message":
                         self._add_message_direct(data["sender"], data["text"], data["is_user"])
                     elif msg_type == "stream_start":
@@ -191,25 +177,15 @@ class CodeGeniusApp:
                         self._end_stream_direct()
                 except queue.Empty:
                     break
-            
-            # 批量处理流式token - 减少UI更新频率
-            if self.batch_messages:
-                current_time = time.time()
-                if current_time - self.last_update_time >= self.BATCH_INTERVAL:
-                    combined_text = "".join(self.batch_messages)
-                    self._update_stream_batch(combined_text)
-                    self.batch_messages.clear()
-                    self.last_update_time = current_time
-                    
         finally:
-            # 继续处理队列
             if self.running:
-                self.root.after(10, self.process_message_queue)  # 每10ms检查一次
+                self.root.after(10, self.process_message_queue)
 
     def _start_stream_direct(self):
         """直接开始流式消息"""
         self.streaming = True
         self.current_ai_text = ""
+        self.token_buffer = []
         self.chat_text.config(state=tk.NORMAL)
         self.chat_text.insert(tk.END, "【CodeGenius】\n", "ai_header")
         self.chat_text.tag_config("ai_header", foreground="#6c757d", font=("Microsoft YaHei", 9, "italic"))
@@ -222,20 +198,38 @@ class CodeGeniusApp:
         """直接结束流式消息"""
         if self.streaming:
             self.streaming = False
-            final_text = self.current_ai_text.strip()
-            self.current_ai_text = ""
+            if self.token_buffer:
+                final_sentence = "".join(self.token_buffer).strip()
+                if final_sentence:
+                    self.current_ai_text += final_sentence + "\n"
+                    self._update_stream_line(final_sentence)
+                self.token_buffer = []
+            self.current_ai_text = self.current_ai_text.strip()
             self.chat_text.config(state=tk.NORMAL)
-            self.chat_text.insert(tk.END, f"\n\n", "ai")
+            self.chat_text.insert(tk.END, "\n", "ai")
             self.chat_text.tag_config("ai", foreground="#6c757d", font=("Microsoft YaHei", 10))
             self.chat_text.see(tk.END)
             self.chat_text.config(state=tk.DISABLED)
 
-    def _update_stream_batch(self, text):
-        """批量更新流式文本 - 核心优化：减少UI操作"""
+    def _handle_stream_token(self, token):
+        """处理流式 token，缓冲直到形成完整句子"""
         if not self.streaming:
             return
-            
-        self.current_ai_text += text
+
+        self.token_buffer.append(token.strip())
+        current_text = "".join(self.token_buffer)
+        sentence_endings = {'.', '!', '?', '。', '！', '？'}
+        if any(current_text.endswith(end) for end in sentence_endings):
+            sentence = current_text.strip()
+            self.current_ai_text += sentence + "\n"
+            self._update_stream_line(sentence)
+            self.token_buffer = []
+
+    def _update_stream_line(self, text):
+        """逐句更新流式文本"""
+        if not self.streaming:
+            return
+
         self.chat_text.config(state=tk.NORMAL)
         try:
             if hasattr(self, 'ai_stream_start'):
@@ -244,15 +238,15 @@ class CodeGeniusApp:
                 self.ai_stream_start = self.chat_text.index(tk.END)
         except tk.TclError:
             self.ai_stream_start = self.chat_text.index(tk.END)
-            
-        self.chat_text.insert(tk.END, text, "ai_stream")
+
+        self.chat_text.insert(tk.END, self.current_ai_text, "ai_stream")
         color = "#e0e0e0" if self.is_dark else "#333333"
         self.chat_text.tag_config("ai_stream", foreground=color)
         self.chat_text.see(tk.END)
         self.chat_text.config(state=tk.DISABLED)
 
     def _add_message_direct(self, sender: str, text: str, is_user: bool = False):
-        """直接添加消息（用于非流式）- 减少中间步骤"""
+        """直接添加消息（用于非流式）"""
         self.chat_text.config(state=tk.NORMAL)
         if is_user:
             self.chat_text.insert(tk.END, f"【你】\n{text}\n\n", "user")
@@ -275,7 +269,7 @@ class CodeGeniusApp:
             }))
 
     def update_streaming_message(self, token: str):
-        """异步更新流式token - 通过队列批处理"""
+        """异步更新流式 token - 逐句处理"""
         self.message_queue.put(("stream_token", token))
 
     def cleanup_streaming(self):
@@ -283,7 +277,6 @@ class CodeGeniusApp:
         self.message_queue.put(("stream_end", None))
 
     def create_widgets(self):
-        # 顶部栏
         top_frame = ttk.Frame(self.root, padding=10)
         top_frame.pack(fill=tk.X)
 
@@ -298,11 +291,9 @@ class CodeGeniusApp:
         self.theme_btn = ttk.Button(right_frame, text="🌙 暗色", bootstyle=OUTLINE, command=self.toggle_theme)
         self.theme_btn.pack(side=tk.LEFT, padx=5)
 
-        # 主区域
         main_frame = ttk.Frame(self.root, padding=10)
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Banner
         self.banner_frame = ttk.Frame(main_frame, bootstyle="warning", padding=10)
         ttk.Label(
             self.banner_frame,
@@ -311,16 +302,14 @@ class CodeGeniusApp:
             font=("", 10)
         ).pack()
         self.banner_frame.pack(fill=tk.X, pady=(0, 10))
-        self.banner_frame.pack_forget()  # Hidden initially
+        self.banner_frame.pack_forget()
 
-        # 聊天区
         self.chat_text = scrolledtext.ScrolledText(
             main_frame, wrap=tk.WORD, state=tk.DISABLED,
             font=("Microsoft YaHei", 10), padx=10, pady=10
         )
         self.chat_text.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
-        # 输入区
         input_frame = ttk.Frame(main_frame)
         input_frame.pack(fill=tk.X)
         self.input_field = ttk.Text(input_frame, height=3, font=("Microsoft YaHei", 10))
@@ -329,12 +318,10 @@ class CodeGeniusApp:
         self.send_btn.pack(side=tk.RIGHT)
         self.input_field.bind("<Return>", self.on_enter)
 
-        # 状态栏
         self.status_var = tk.StringVar(value="就绪")
         status_bar = ttk.Label(self.root, textvariable=self.status_var, bootstyle="secondary", padding=(10, 5))
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-        # 配置窗口
         self.create_config_window()
 
     def create_config_window(self):
@@ -394,7 +381,6 @@ class CodeGeniusApp:
             self.folder_var.set(f"📁 {os.path.basename(folder)}")
             os.chdir(folder)
             setup_logging(self.project_folder)
-            # 保存到配置文件
             system_prompt = self.system_prompt_text.get("1.0", tk.END).strip()
             save_app_config(self.app_dir, self.project_folder, system_prompt)
 
@@ -408,7 +394,6 @@ class CodeGeniusApp:
         self.config_win.protocol("WM_DELETE_WINDOW", self.close_config)
 
     def close_config(self):
-        # 在关闭配置窗口时保存当前系统提示词 (如果改变了)
         system_prompt = self.system_prompt_text.get("1.0", tk.END).strip()
         save_app_config(self.app_dir, self.project_folder, system_prompt)
         self.config_win_visible = False
@@ -431,7 +416,6 @@ class CodeGeniusApp:
         self.status_var.set("思考中...")
         self.send_btn.config(state=tk.DISABLED)
         
-        # 使用线程池执行任务
         self.executor.submit(self.run_agent_task, task)
 
     def run_agent_task(self, task: str):
@@ -487,7 +471,6 @@ class CodeGeniusApp:
             messagebox.showerror("错误", "请填写系统提示词！")
             return
 
-        # 保存到配置文件 (覆盖)
         save_app_config(self.app_dir, self.project_folder, system_prompt)
 
         self.status_var.set("初始化中...")
@@ -502,12 +485,10 @@ class CodeGeniusApp:
         ttk.Label(progress_win, text="正在初始化智能体，请稍候...", padding=20).pack()
         progress_win.update()
 
-        # 使用线程池执行初始化
         self.executor.submit(self._init_agent_background, progress_win, api_key, base_url, model_name, system_prompt)
 
     def _init_agent_background(self, progress_win, api_key, base_url, model_name, system_prompt):
         try:
-            # Initialize LLM
             llm = OpenAILLM(
                 api_key=api_key,
                 base_url=base_url,
@@ -516,9 +497,8 @@ class CodeGeniusApp:
             if not system_prompt:
                 raise ValueError("系统提示词不能为空！")
             
-            # Initialize PythonProgrammerAgent
             agent = PythonProgrammerAgent(
-                basellm = llm,
+                basellm=llm,
                 project_dir=self.project_folder,
                 system_prompt=system_prompt
             )
@@ -548,7 +528,6 @@ class CodeGeniusApp:
         self.config_btn.config(state=tk.NORMAL)
 
     def __del__(self):
-        """清理资源"""
         self.running = False
         if hasattr(self, 'executor'):
             self.executor.shutdown(wait=False)
@@ -560,7 +539,6 @@ if __name__ == "__main__":
     try:
         root.mainloop()
     finally:
-        # 确保资源清理
         app.running = False
         if hasattr(app, 'executor'):
             app.executor.shutdown(wait=False)
