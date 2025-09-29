@@ -35,19 +35,43 @@ def setup_logging(project_dir):
 
 # 加载环境变量
 def load_config_from_env():
-    env_file = Path(".env")
-    for _ in range(3):
+    # 判断是否是 PyInstaller 打包后的环境
+    if getattr(sys, 'frozen', False):
+        # 打包后：EXE 所在目录
+        app_dir = Path(sys.executable).parent
+    else:
+        # 开发时：当前脚本所在目录
+        app_dir = Path(__file__).parent
+
+    env_file = app_dir / ".env"
+    print(app_dir)
+    # 尝试加载 .env
+    if env_file.exists():
+        print("存在")
+        
+        load_dotenv(dotenv_path=env_file)
+        print(os.getenv("API_KEY", "YOUR_API_KEY"));
+        # print(os.get)
+        return True
+
+    # 可选：向上查找 1-2 层（适用于复杂项目结构）
+    for _ in range(2):
+        app_dir = app_dir.parent
+        env_file = app_dir / ".env"
         if env_file.exists():
-            load_dotenv(env_file)
+            load_dotenv(dotenv_path=env_file)
             return True
-        env_file = env_file.parent / ".env"
+        
+    # 默认值（建议留作 fallback）
     os.environ.setdefault("API_KEY", "YOUR_API_KEY")
-    os.environ.setdefault("BASE_URL", "https://api.openai.com/v1")
+    os.environ.setdefault("BASE_URL", "https://api.openai.com/v1")  # 注意：无空格！
     os.environ.setdefault("MODEL_NAME", "gpt-4o-mini")
     return False
 
 class CodeGeniusApp:
     def __init__(self, root: ttk.Window):
+        load_config_from_env()
+        
         self.root = root
         self.root.title("🧠 CodeGenius - AI 编程助手")
         self.root.geometry("1000x750")
@@ -60,9 +84,8 @@ class CodeGeniusApp:
         self.streaming = False
         self.current_ai_text = ""
         self.config_win_visible = False
-
         self.create_widgets()
-        load_config_from_env()
+        
 
     def create_widgets(self):
         # 顶部栏
