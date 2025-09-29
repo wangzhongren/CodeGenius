@@ -8,3 +8,5 @@ env/
 venv/
 .env
 .svn/
+build/
+dist/

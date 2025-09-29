@@ -1,0 +1,1 @@
+pyinstaller.exe -w -i logo.ico  --onefile  .\codegenius_tk_with_config.py

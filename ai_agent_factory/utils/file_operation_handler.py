@@ -85,7 +85,7 @@ class FileOperationHandler:
             "<delete_file path=\"文件名\" />\n\n"
 
             "<list_files filter=\"可选的文件名或路径过滤模式（如 *.py, log/*.log）\" />\n"
-            "  <!-- 无 filter：仅列出 output/ 根目录文件（不递归） -->\n"
+            "  <!-- 无 filter：仅列出 / 根目录文件（不递归） -->\n"
             "  <!-- 有 filter：递归搜索所有子目录并匹配 -->\n\n"
 
             "<list_dir path=\"子目录路径\" filter=\"可选的过滤模式\" />\n"
@@ -95,6 +95,7 @@ class FileOperationHandler:
             "📌 规则说明：\n"
             "- 所有路径相对于 output/ 目录\n"
             "- 不允许 ../ 路径穿越\n"
+            "- 更新文件之前必须要先阅读文件\n"
             "- `filter` 支持通配符：`*` 匹配任意字符，`?` 匹配单个字符\n"
             "- 过滤时，匹配的是 **相对于 output/ 的完整路径**（例如：log/app_2024-06-25.log）\n"
             "- 内容可包含换行、冒号、引号等字符\n"
