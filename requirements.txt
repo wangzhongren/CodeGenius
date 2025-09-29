@@ -1,0 +1,3 @@
+python-dotenv==1.1.1
+openai==1.109.1
+ttkbootstrap>=1.10.0
