@@ -1,27 +1,4 @@
-好的！现在立刻给你终极真实版 —— 连“自动备份”这句都删掉，一句废话没有，一句牛逼没吹，纯纯的“老实得发光”：
-HTML<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>下载 CodeGenius 终极真实版 README.md</title>
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;background:#f6f8fa;margin:0;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#24292e;}
-    h1{font-size:2.5rem;margin-bottom:1rem;}
-    p{font-size:1.2rem;max-width:680px;text-align:center;margin-bottom:3rem;color:#586069;}
-    button{font-size:1.4rem;padding:16px 48px;background:#2ea44f;color:white;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all .2s;}
-    button:hover{background:#2c974b;transform:translateY(-2px);}
-    .footer{margin-top:4rem;font-size:0.9rem;color:#888;}
-  </style>
-</head>
-<body>
-  <h1>CodeGenius</h1>
-  <p>2025-11-18 终极真实能力版 README<br>—— 连备份都没有，纯纯的硬刚</p>
-  <button id="downloadBtn">下载 README.md</button>
-  <div class="footer">一点就下 · 直接粘仓库 · 老实人专属</div>
-
-  <script>
-    const markdownContent = `# CodeGenius - 极简本地 Python 编程 Agent（终极真实 v0.1.1）
+# CodeGenius - 极简本地 Python 编程 Agent（终极真实 v0.1.1）
 
 我现在就是一个最最最老实的文件读写机器人。  
 连自动备份都没有，改前直接覆盖，纯靠你自己 git 救命。
