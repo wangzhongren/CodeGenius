@@ -1,78 +1,104 @@
-# CodeGenius - 极简本地 Python 编程 Agent（真实 v0.1.1）
+好的！现在立刻给你终极真实版 —— 连“自动备份”这句都删掉，一句废话没有，一句牛逼没吹，纯纯的“老实得发光”：
+HTML<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>下载 CodeGenius 终极真实版 README.md</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;background:#f6f8fa;margin:0;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#24292e;}
+    h1{font-size:2.5rem;margin-bottom:1rem;}
+    p{font-size:1.2rem;max-width:680px;text-align:center;margin-bottom:3rem;color:#586069;}
+    button{font-size:1.4rem;padding:16px 48px;background:#2ea44f;color:white;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all .2s;}
+    button:hover{background:#2c974b;transform:translateY(-2px);}
+    .footer{margin-top:4rem;font-size:0.9rem;color:#888;}
+  </style>
+</head>
+<body>
+  <h1>CodeGenius</h1>
+  <p>2025-11-18 终极真实能力版 README<br>—— 连备份都没有，纯纯的硬刚</p>
+  <button id="downloadBtn">下载 README.md</button>
+  <div class="footer">一点就下 · 直接粘仓库 · 老实人专属</div>
 
-一个老实到骨子里的 AI 编程助手  
-它现在已经能看懂你的项目结构了，但依然只会上手改文件。
+  <script>
+    const markdownContent = `# CodeGenius - 极简本地 Python 编程 Agent（终极真实 v0.1.1）
 
-## 当前真实能力（2025-11-18 最新版，100% 诚实）
+我现在就是一个最最最老实的文件读写机器人。  
+连自动备份都没有，改前直接覆盖，纯靠你自己 git 救命。
 
-- 只能指定 **1 个** 项目文件夹（暂不支持多文件夹）
-- Agent 拥有 **4 个工具**（比昨天多一个）：
-  - 列出目录及文件（list_dir）← **已实现！可以看路径了！**
-  - 读取文件（read_file）
-  - 创建/覆盖文件（write_file）← 目前直接覆盖
-  - 删除文件（delete_file）
-- 可以先用 list_dir 看清项目结构，再决定操作哪个文件（不再完全靠猜路径）
-- 依然没有模糊搜索文件功能（想找文件只能让它先 list_dir 再判断）
-- 依然没有修改预览和人工确认 → **直接覆盖原文件**
-- 自动备份机制：每次覆盖前会把原文件备份到 \`.codegenius_backup/时间戳_原文件名\`
+## 当前 100% 真实能力（2025-11-18）
 
-## 它现在适合干啥（成功率显著好多了）
+- 只能指定 **1 个** 项目文件夹
+- Agent 拥有 **4 个工具**：
+  - list_dir → 列出目录（能看到路径了！）
+  - read_file → 读文件
+  - write_file → **直接覆盖原文件**（无备份、无预览、无确认）
+  - delete_file → 直接删除（也没确认）
+- 没有搜索文件功能
+- 没有 diff 预览
+- 没有人工确认步骤
+- 没有备份机制（你没做，我就不写）
+
+## 它现在适合干啥（谨慎使用！）
+
+只有在下面这几种情况才敢用：
 
 \`\`\`text
-先列出项目结构，然后把所有 print 换成 logger.debug
-列出 tests 目录下所有文件，把 test_old.py 删除
-在 src/utils/ 下新增 cache.py 实现 LRUCache
-把所有 requests.post( 调用加上 timeout=10 参数
+先列出目录结构，然后把 utils.py 里的 print 换成 logger.debug
+在 project/ 下新增 config.py 内容如下……
+删除 tests/test_legacy.py 这个文件
 \`\`\`
 
-有了 list_dir 之后，路径猜错的概率大幅下降，成功率 85~95%（看模型）
+路径对了 + 模型不抽风 = 成功  
+路径错了或模型抽风 = 你自己 git revert
 
-## 和市面主流工具的真实差距（依然不装）
+## 和主流工具真实差距（完全不装）
 
-| 项目                  | CodeGenius（当前真实）         | Cursor / Aider / Claude Code |
-|-----------------------|--------------------------------|------------------------------|
-| 支持多个项目目录      | 不支持，只支持 1 个            | 全支持                       |
-| 是否能列目录/看路径   | 支持！（list_dir 已就位）      | 全支持                       |
-| 是否有修改前确认      | 没有，直接覆盖                 | 大部分有                     |
-| 是否有模糊文件搜索    | 暂无                           | 全有                         |
-| 是否会一次性改几十个文件 | 基本不会                       | 经常会                       |
-| 工具调用出错概率      | 超低（只有4个工具）            | 中等                         |
-| 隐私                  | 100% 本地（除非用云API）       | 部分本地                     |
+| 项目                  | CodeGenius（现在）       | Cursor / Aider / Claude Code |
+|-----------------------|--------------------------|------------------------------|
+| 支持多文件夹          | 不支持                   | 全支持                       |
+| 能否列目录            | 支持                     | 支持                         |
+| 是否有修改预览/确认   | 完全没有                 | 大部分有                     |
+| 是否会批量改文件      | 基本不会                 | 经常会                       |
+| 是否有备份            | 没有                     | 大部分有                     |
+| 工具调用出错概率      | 极低（只有4个）          | 中等                         |
+| 敢不敢在生产项目用    | 你敢我也不拦着           | 他们敢                       |
 
 一句话总结：  
-**它现在是个“会看目录 + 带备份 + 只会上手改文件的超级老实机器人”**  
-已经比昨天好用一倍，再加一步“修改预览+确认”就能起飞。
+**我现在就是 ls + cat + echo > + rm 的 AI 版**  
+用前请先 git commit，出了事别骂我。
 
-## 安装 & 使用
+## 安装使用
 
 \`\`\`bash
 git clone https://github.com/wangzhongren/CodeGenius.git
 cd CodeGenius/desktop_app
-python -m venv venv && source venv/bin/activate  # 或 Windows 对应命令
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # 填 API_KEY 和 BASE_URL（支持 Ollama/Groq/OpenAI 等）
+cp .env.example .env
 python codegenius_tk.py
 \`\`\`
 
-使用流程：
-1. 选择一个项目文件夹
-2. 初始化 Agent
-3. 直接问就行，比如：
-   > 先列出项目目录结构，然后把所有 print 换成 logger.info
+用之前记得：
+\`\`\`bash
+git add .
+git commit -m "before codegenius 救命存档"
+\`\`\`
 
-## 路线图（下一步就做这些）
+## 路线图（接下来必须做的）
 
-- [x] list_dir（已完成！）
+- [ ] 加上自动备份（最紧急！）
+- [ ] 修改前 diff 预览 + 手动 Y/n 确认
 - [ ] 支持多文件夹
-- [ ] 模糊文件搜索
-- [ ] 修改前 diff 预览 + 手动确认（最重要！）
-- [ ] 一键回滚到备份
-- [ ] 完全离线本地模型支持
+- [ ] 文件模糊搜索
+- [ ] 一键回滚
 
 ## 结语
 
-方向只有一个：  
-**让 AI 改代码像 ls + cp + rm 一样可预测、可观察、可信任**
+这玩意儿现在就是个“带大模型的危险脚本”  
+但方向是对的：极简工具 + 可见每一步 + 最终可信任
 
-喜欢这个“老实人”路线的朋友，欢迎 star、watch、吐槽、PR。  
-咱们一起把它从 v0.1.1 熬成生产可用神器！
+喜欢这个“从零开始老实做”的风格，欢迎 star、watch、吐槽、PR  
+咱们一起把它从“危险”变成“生产可用”
+
+MIT License © wangzhongren
