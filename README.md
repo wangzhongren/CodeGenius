@@ -1,203 +1,81 @@
-# CodeGenius - AI Programming Assistant / AI 编程助手
+# CodeGenius - 极简本地 Python 编程 Agent（真实 v0.1）
 
-CodeGenius is an AI-powered Python programming assistant desktop application that uses large language models to help users develop Python projects. Through a graphical interface, users can interact with AI agents to generate code, modify files, manage projects, and more.
+一个老实到不能再老实的 AI 编程助手  
+它现在真的只有最基础的能力，但也正因如此，几乎不可能把你的项目搞崩。
 
-CodeGenius 是一个基于 AI 的 Python 编程助手桌面应用程序，它使用大语言模型来帮助用户开发 Python 项目。通过图形界面，用户可以与 AI 智能体交互，生成代码、修改文件、管理项目等。
+## 当前真实能力（2025-11-18 版本，100% 诚实）
 
-## Features / 功能特性
+- 只能指定 **1 个** 项目文件夹（不支持多选、不支持多个目录）
+- Agent 只有 **3 个工具**：
+  - 读取文件（read_file）
+  - 创建/覆盖文件（write_file）← 目前直接覆盖
+  - 删除文件（delete_file）
+- 没有列出目录工具（list_dir 还没做）
+- 没有搜索文件工具（只能靠 LLM 猜路径）
+- 没有修改预览和人工确认步骤 → **直接覆盖原文件**
+- 为了防止你骂街，会自动把原文件备份到项目根目录下的 `.codegenius_backup/yyyy-mm-dd_hh-mm-ss_原文件名`
 
-- 🧠 **AI-Powered Programming Assistant** - Generates high-quality Python code using OpenAI-compatible APIs
-- 🖥️ **Desktop GUI Application** - Modern UI based on Tkinter and ttkbootstrap
-- 🎨 **Theme Switching** - Supports light and dark themes
-- 📁 **Project Management** - Select project directories and manage files within them
-- 🔄 **Real-time Streaming Response** - AI-generated content displayed in real-time in the chat interface
-- 📝 **Logging System** - Automatically creates time-rotated log files
-- ⚙️ **Flexible Configuration** - Supports custom API keys, base URLs, and model names
-- 🔐 **Secure Configuration** - Sensitive information managed through environment variables
+## 它现在适合干啥（别指望太多）
 
-- 🧠 **AI 驱动的编程助手** - 使用 OpenAI 兼容的 API 生成高质量 Python 代码
-- 🖥️ **桌面 GUI 应用** - 基于 Tkinter 和 ttkbootstrap 的现代化界面
-- 🎨 **主题切换** - 支持亮色和暗色主题
-- 📁 **项目管理** - 选择项目目录并管理其中的文件
-- 🔄 **实时流式响应** - AI 生成的内容实时显示在聊天界面
-- 📝 **日志记录** - 自动创建按日期轮转的日志文件
-- ⚙️ **灵活配置** - 支持自定义 API 密钥、基础 URL 和模型名称
-- 🔐 **安全配置** - 敏感信息通过环境变量管理
+你可以用它做一些“相对安全”的小任务，比如：
 
-## System Requirements / 系统要求
+```text
+把 utils.py 里的所有 print 换成 logger.debug
+在项目里新增一个 tools/cache.py 文件，内容实现 LRUCache
+把 tests/test_old.py 删除掉
+把所有 requests.post( 调用加上 timeout=10 参数
+```
 
-- Python 3.8 or higher
-- Windows, macOS, or Linux operating system
+只要路径猜对了、任务描述清楚了，成功率还不错（70~90% 取决于模型）
 
-- Python 3.8 或更高版本
-- Windows、macOS 或 Linux 操作系统
+## 和市面主流工具的真实差距（完全不装）
 
-## Installation / 安装步骤
+| 项目                  | CodeGenius（现在）           | Cursor / Continue / Aider / Claude Code |
+|-----------------------|------------------------------|-----------------------------------------|
+| 支持多个项目目录      | 不支持，只支持 1 个          | 全部支持                                |
+| 是否有修改前确认      | 没有，直接覆盖               | 大部分有                                |
+| 是否有文件列表/搜索   | 没有，靠 LLM 猜路径          | 全都有                                  |
+| 工具调用出错概率      | 极低（只有3个工具）          | 中等（工具太多容易选错）                |
+| 是否会一次性改几十个文件 | 基本不会                     | 经常会                                  |
+| 幻觉后能否现场补救    | 能（你看得见每一步）         | 部分能                                  |
+| 隐私                  | 100% 本地（除非你用云API）   | 部分本地                                |
 
-1. Clone or download the project locally:
-   ```bash
-   git clone <repository-url>
-   cd ai_python_agent/desktop_app
-   ```
+总结一句话：  
+**它现在就是个“带备份的、3工具版、最老实的文件读写机器人”**，  
+离“好用”还早，但离“敢在生产项目里试试”已经比 90% 的全自动 Agent 近多了。
 
-2. Create a virtual environment (recommended):
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate  # Windows
-   # source venv/bin/activate  # macOS/Linux
-   ```
+## 安装 & 使用（超级简单）
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+git clone https://github.com/wangzhongren/CodeGenius.git
+cd CodeGenius/desktop_app
+python -m venv venv
+# 激活虚拟环境...
+pip install -r requirements.txt
+cp .env.example .env   # 填你的 API_KEY 和 BASE_URL（支持 Ollama/Groq/OpenAI 等）
+python codegenius_tk.py
+```
 
-1. 克隆或下载项目到本地：
-   ```bash
-   git clone <repository-url>
-   cd ai_python_agent/desktop_app
-   ```
+使用流程：
+1. 点击“选择” → 选一个项目文件夹（只能选一个）
+2. 初始化 Agent
+3. 直接聊天提问就行
 
-2. 创建虚拟环境（推荐）：
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate  # Windows
-   # source venv/bin/activate  # macOS/Linux
-   ```
+## 接下来准备加的功能（路线图）
 
-3. 安装依赖：
-   ```bash
-   pip install -r requirements.txt
-   ```
+- [ ] 支持多文件夹选择
+- [ ] 添加 list_dir 工具
+- [ ] 添加模糊搜索文件工具
+- [ ] 修改前 diff 预览 + 手动确认（这个最重要）
+- [ ] 一键回滚到备份
+- [ ] 支持本地模型完全离线运行
 
-## Configuration / 配置
+## 结语
 
-1. Copy the `.env.example` file and rename it to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
+这玩意儿现在还很原始，但方向是：  
+**“让 AI 改代码像 cp、mv、rm 一样可预测、可回滚、可信任”**
 
-2. Edit the `.env` file to enter your API key and other configurations:
-   ```env
-   API_KEY=your_openai_api_key_here
-   BASE_URL=https://api.openai.com/v1
-   MODEL_NAME=gpt-4o-mini
-   ```
+喜欢这个“老实人”路线的朋友，欢迎 star、watch、提 issue、吐槽、PR。  
+我们一起把它从 v0.1 熬成真正的生产可用工具。
 
-   You can also use other providers that support the OpenAI API format:
-   - OpenRouter: `BASE_URL=https://openrouter.ai/api/v1`
-   - Azure OpenAI: `BASE_URL=your_azure_endpoint`
-   - Other OpenAI-compatible APIs
-
-1. 复制 `.env.example` 文件并重命名为 `.env`：
-   ```bash
-   cp .env.example .env
-   ```
-
-2. 编辑 `.env` 文件，填入你的 API 密钥和其他配置：
-   ```env
-   API_KEY=your_openai_api_key_here
-   BASE_URL=https://api.openai.com/v1
-   MODEL_NAME=gpt-4o-mini
-   ```
-
-   你也可以使用其他支持 OpenAI API 格式的提供商：
-   - OpenRouter: `BASE_URL=https://openrouter.ai/api/v1`
-   - Azure OpenAI: `BASE_URL=your_azure_endpoint`
-   - 其他兼容 OpenAI 的 API
-
-## Usage / 使用方法
-
-1. Start the application:
-   ```bash
-   python codegenius_tk.py
-   ```
-
-2. In the application:
-   - Click the "📁 Select" button to choose your project directory
-   - Click the "⚙️ Config" button to set API keys, models, and other parameters
-   - Click the "🚀 Initialize Agent" button to initialize the AI agent
-   - Enter programming task requirements in the input box
-   - Click "Send" or press Enter to interact with the AI agent
-
-1. 启动应用程序：
-   ```bash
-   python codegenius_tk.py
-   ```
-
-2. 在应用程序中：
-   - 点击“📁 选择”按钮选择你的项目目录
-   - 点击“⚙️ 配置”按钮设置 API 密钥、模型等参数
-   - 点击“🚀 初始化智能体”按钮初始化 AI 智能体
-   - 在输入框中输入编程任务需求
-   - 点击“发送”或按回车键与 AI 智能体交互
-
-## Application Architecture / 应用程序架构
-
-- `codegenius_tk.py`: Main Tkinter GUI application / 主要的 Tkinter GUI 应用程序
-- `python_programmer_agent2.py`: Python programmer agent that handles programming tasks / Python 程序员智能体，处理编程任务
-- `ai_agent_factory/`: AI agent factory module containing base agents and LLM implementations / AI 智能体工厂模块，包含基础智能体和 LLM 实现
-- `requirements.txt`: Project dependencies / 项目依赖
-- `.env.example`: Environment variable configuration template / 环境变量配置模板
-
-## AI Agent Functions / AI 智能体功能
-
-The Python programmer agent can perform the following operations:
-- Create new files / 创建新文件
-- Read existing files / 读取现有文件
-- Update file content / 更新文件内容
-- Delete files / 删除文件
-- Follow PEP 8 guidelines / 遵循 PEP 8 规范
-- Integrate logging systems / 集成日志系统
-- Use type annotations / 使用类型注解
-- Add appropriate comments and documentation / 添加适当注释和文档
-
-## Logging System / 日志系统
-
-The application automatically creates log files in the `log/` folder within the project directory, generating one log file per day with the naming format `app_YYYY-MM-DD.log`.
-
-应用程序会在项目目录下的 `log/` 文件夹中自动创建日志文件，每天生成一个日志文件，命名格式为 `app_YYYY-MM-DD.log`。
-
-## Environment Variables / 环境变量
-
-- `API_KEY`: AI service API key / AI 服务的 API 密钥
-- `BASE_URL`: AI service API base URL / AI 服务的 API 基础 URL
-- `MODEL_NAME`: Model name to use / 要使用的模型名称
-
-## Troubleshooting / 故障排除
-
-1. **Startup Issues** - Ensure all dependencies are installed / **启动问题** - 确保已安装所有依赖项
-2. **API Errors** - Check the configuration in the `.env` file / **API 错误** - 检查 `.env` 文件中的配置是否正确
-3. **Permission Issues** - Ensure the application has permission to access the selected project directory / **权限问题** - 确保应用程序有权限访问选择的项目目录
-
-## Development / 开发
-
-This application is built using the following technology stack:
-- Python 3.8+
-- Tkinter and ttkbootstrap (GUI)
-- OpenAI Python library (AI interaction)
-- python-dotenv (environment variable management)
-
-此应用程序使用以下技术栈构建：
-- Python 3.8+
-- Tkinter 和 ttkbootstrap（GUI）
-- OpenAI Python 库（AI 交互）
-- python-dotenv（环境变量管理）
-
-## Contributing / 贡献
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-欢迎提交问题报告和拉取请求。对于重大变更，请先开 issue 讨论你想改变的内容。
-
-## License / 许可证
-
-Please see the LICENSE file in the project (if it exists).
-
-请查看项目中的 LICENSE 文件（如果存在）。
-
-## Notes / 注意事项
-
-- This application requires a valid AI API key to function properly / 该应用程序需要有效的 AI API 密钥才能正常工作
-- API calls generated during usage will incur corresponding fees / 在使用过程中产生的 API 调用会产生相应的费用
-- Please ensure compliance with the AI service provider's terms of use / 请确保遵守 AI 服务提供商的使用条款
+MIT License © wangzhongren
